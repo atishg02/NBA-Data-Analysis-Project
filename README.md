@@ -30,7 +30,7 @@ EDA involved exploring the NBA data to answer key questions, such as:
 
 ### Data Analysis
 
-SCRAPING OUR DATA FOR 2025
+*SCRAPING OUR DATA FOR 2025*
 ```R
 library(rvest)
 library(dplyr)
@@ -60,7 +60,7 @@ top_3pt_players_df <- top_3pt_players_df[-1, ]
 print(top_3pt_players_df)
 ```
 
-SCRAPING OUR DATA FOR 2005
+*SCRAPING OUR DATA FOR 2005*
 ```R
 library(rvest)
 library(dplyr)
