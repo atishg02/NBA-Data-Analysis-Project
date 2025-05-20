@@ -5,10 +5,10 @@
 - [Project Overview](#project-overview)
 - [Data Sources](#data-sources)
 - [Tools](#tools)
-- [Data Cleaning/Preparation](#data-cleaning/preparation)
+- [Data Cleaning and Preparation](#data-cleaning-and-preparation)
 - [Exploratory Data Analysis](#exploratory-data-analysis)
 - [Data Analysis](#data-analysis)
-- [Results/Findings](#results/findings)
+- [Results and Findings](#results-and-findings)
 - [Limitations](#limitations)
 - [References](#references)
 
@@ -26,7 +26,7 @@ The primary datasets used for this analysis are the "NBA_3pt_2025.csv" file and 
 - R- Data Cleaning and Data Analysis
 - Overleaf - Creating reports
 
-### Data Cleaning/Preparation
+### Data Cleaning and Preparation
 
 For the initial data preparation phase, we did the following things: 
 1. Data loading and inspection.
@@ -123,7 +123,7 @@ ggplot(posterior_df, aes(x = reorder(Team, PosteriorMean3P), y = PosteriorMean3P
   theme_minimal()
 ```
 
-### Results/Findings
+### Results and Findings
 
 The analysis results are summarized as follows:
 1. The NBA has seen a rise in three-point shooting within the last 20 years, however, three-point percentage has not significantly risen.
