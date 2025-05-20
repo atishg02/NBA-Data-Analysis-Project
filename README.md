@@ -5,7 +5,12 @@
 - [Project Overview](#project-overview)
 - [Data Sources](data-sources)
 - [Tools](Tools)
-- [Data Cleaning and Preparation](Data Cleaning-and-preparation)
+- [Data Cleaning/Preparation](data-cleaning/preparation)
+- [Exploratory Data Analysis](exploratory-data-analysis)
+- [Data Analysis](data-analysis)
+- [Results/Findings](results/findings)
+- [Limitations](limitations)
+- [References](references)
 
 ### Project Overview
 
@@ -21,7 +26,7 @@ The primary datasets used for this analysis are the "NBA_3pt_2025.csv" file and 
 - R- Data Cleaning and Data Analysis
 - Overleaf - Creating reports
 
-### Data Cleaning and Preparation
+### Data Cleaning/Preparation
 
 For the initial data preparation phase, we did the following things: 
 1. Data loading and inspection.
@@ -111,8 +116,8 @@ Two seasons alone cannot guarantee persistence of trends; future analyses should
 
 ### References
 
-1. Basketball Reference. ”NBA Player Three-Point Shooting Stats,” https://www.basketball-reference. com/.
-2. Stan Development Team. ”Stan Modeling Language Users Guide and Reference Manual,” https: //mc-stan.org.
-3. Syracuse University News. ”Deflation: Study Shows NBA 3-Point Shot Has Lost Its Value,” https:// news.syr.edu/blog/2024/02/09/deflation-study-shows-nba-3-point-shot-has-lost-its-value/.
-4. FOX Sports. ”NBA commissioner Adam Silver vows to fix 3-point shooting issue” https://www. foxsports.com/stories/nba/nba-commissioner-adam-silver-vows-fix-3-point-shooting-issue-we-it.
+1. Basketball Reference. ”NBA Player Three-Point Shooting Stats,” https://www.basketball-reference.com/.
+2. Stan Development Team. ”Stan Modeling Language Users Guide and Reference Manual,” https://mc-stan.org.
+3. Syracuse University News. ”Deflation: Study Shows NBA 3-Point Shot Has Lost Its Value,” https://news.syr.edu/blog/2024/02/09/deflation-study-shows-nba-3-point-shot-has-lost-its-value/.
+4. FOX Sports. ”NBA commissioner Adam Silver vows to fix 3-point shooting issue” https://www.foxsports.com/stories/nba/nba-commissioner-adam-silver-vows-fix-3-point-shooting-issue-we-it.
 5. Overleaf, online latex editor. Overleaf, Online LaTeX Editor. (n.d.). https://www.overleaf.com/ 
