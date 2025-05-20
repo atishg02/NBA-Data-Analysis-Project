@@ -66,7 +66,6 @@ Two seasons alone cannot guarantee persistence of trends; future analyses should
 ### References
 
 1. Basketball Reference. ”NBA Player Three-Point Shooting Stats,” https://www.basketball-reference.com/.
-2. Stan Development Team. ”Stan Modeling Language Users Guide and Reference Manual,” https://mc-stan.org.
-3. Syracuse University News. ”Deflation: Study Shows NBA 3-Point Shot Has Lost Its Value,” https://news.syr.edu/blog/2024/02/09/deflation-study-shows-nba-3-point-shot-has-lost-its-value/.
-4. FOX Sports. ”NBA commissioner Adam Silver vows to fix 3-point shooting issue” https://www.foxsports.com/stories/nba/nba-commissioner-adam-silver-vows-fix-3-point-shooting-issue-we-it.
-5. Overleaf, online latex editor. Overleaf, Online LaTeX Editor. (n.d.). https://www.overleaf.com/ 
+2. Syracuse University News. ”Deflation: Study Shows NBA 3-Point Shot Has Lost Its Value,” https://news.syr.edu/blog/2024/02/09/deflation-study-shows-nba-3-point-shot-has-lost-its-value/.
+3. FOX Sports. ”NBA commissioner Adam Silver vows to fix 3-point shooting issue” https://www.foxsports.com/stories/nba/nba-commissioner-adam-silver-vows-fix-3-point-shooting-issue-we-it.
+4. Overleaf, online latex editor. Overleaf, Online LaTeX Editor. (n.d.). https://www.overleaf.com/ 
