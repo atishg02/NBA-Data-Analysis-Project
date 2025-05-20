@@ -42,9 +42,15 @@ EDA involved exploring the NBA data to answer key questions, such as:
 
 ### Data Analysis
 
-*Generating our Posterior Means for 2025*
+*Creating our Two-Sample T-Test to compare the means of 3-point attempts for each season*
 ```R
-
+t_test_3PA <- t.test(`3PA` ~ Season, data = combined)
+print(t_test_3PA)
+```
+*Creating our Two-Sample T-Test to compare the means of 3-point percentage for each season*
+```R
+t_test_3Ppct <- t.test(`3P%` ~ Season, data = combined)
+print(t_test_3Ppct)
 ```
 
 ### Results and Findings
