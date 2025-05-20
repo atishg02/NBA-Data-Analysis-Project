@@ -1,0 +1,390 @@
+---
+title: "451data"
+author: "Divjot Gill"
+date: "2025-04-14"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rvest)
+library(dplyr)
+
+url <- "https://www.basketball-reference.com/leagues/NBA_2025_totals.html"
+page <- read_html(url)
+
+player_stats <- page %>%
+  html_element("table#totals_stats") %>%
+  html_table()
+
+top_3pt_players_df <- player_stats %>%
+  filter(!is.na(Team), !grepl("TM", Team)) %>%
+  mutate(
+  `3PA` = as.numeric(`3PA`),
+  `3P` = as.numeric(`3P`)
+) %>%
+group_by(Team) %>%
+arrange(desc(`3PA`), .by_group = TRUE) %>%
+slice_head(n = 5) %>%
+ungroup() %>%
+dplyr::select(Player, Team, `3P`, `3PA`) %>%
+as.data.frame()
+
+top_3pt_players_df <- top_3pt_players_df[-1, ]
+
+print(top_3pt_players_df)
+```
+
+
+```{r}
+library(rvest)
+library(dplyr)
+
+url <- "https://www.basketball-reference.com/leagues/NBA_2005_totals.html"
+page <- read_html(url)
+
+player_stats <- page %>%
+html_element("table#totals_stats") %>%
+html_table()
+
+names(player_stats) <- trimws(names(player_stats))
+
+top_3pt_players_df_2005 <- player_stats %>%
+  filter(!is.na(Team), !grepl("TM", Team)) %>%
+  mutate(
+  `3PA` = as.numeric(`3PA`),
+  `3P` = as.numeric(`3P`)
+) %>%
+group_by(Team) %>%
+arrange(desc(`3PA`), .by_group = TRUE) %>%
+slice_head(n = 5) %>%
+ungroup() %>%
+dplyr::select(Player, Team, `3P`, `3PA`) %>%
+as.data.frame()
+
+top_3pt_players_df_2005 <- top_3pt_players_df_2005[-1, ]
+
+print(top_3pt_players_df_2005)
+```
+
+
+```{r}
+top_3pt_players_df$Season <- "2025"
+top_3pt_players_df_2005$Season <- "2005"
+
+colnames(top_3pt_players_df_2005) <- colnames(top_3pt_players_df)
+
+combined_df <- bind_rows(top_3pt_players_df, top_3pt_players_df_2005)
+
+combined_df <- combined_df %>%
+  mutate(`3P%` = `3P` / `3PA`)
+
+library(ggplot2)
+
+ggplot(combined_df, aes(x = `3P%`, fill = Season)) +
+  geom_density(alpha = 0.6) +
+  labs(title = "Density of 3P% per Player", x = "3-Point Percentage", y = "Density") +
+  theme_minimal()
+
+
+team_summary <- combined_df %>%
+  group_by(Team, Season) %>%
+  summarise(team_3P = sum(`3P`), team_3PA = sum(`3PA`), .groups = "drop") %>%
+  mutate(`Team 3P%` = team_3P / team_3PA)
+
+ggplot(team_summary, aes(x = Season, y = `Team 3P%`, fill = Season)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(title = "Team-Level 3P% by Season", x = "Season", y = "3P%") +
+  theme_minimal()
+
+ggplot(combined_df, aes(x = `3PA`, y = `3P`, color = Season)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "3PA vs 3P per Player", x = "3-Point Attempts", y = "3-Point Made") +
+  theme_minimal()
+
+
+team_attempts <- combined_df %>%
+  group_by(Team, Season) %>%
+  summarise(Total3PA = sum(`3PA`), .groups = "drop")
+
+ggplot(team_attempts, aes(x = reorder(Team, Total3PA), y = Total3PA, fill = Season)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  labs(title = "Total 3PA by Team in Each Season", x = "Team", y = "Total 3PA") +
+  theme_minimal()
+```
+
+
+```{r}
+library(rstan)
+
+# Filter one season at a time, e.g., 2025
+data_2025 <- combined_df %>% filter(Season == "2025")
+
+# Get unique team IDs
+team_ids <- as.numeric(factor(data_2025$Team))
+J <- length(unique(team_ids))
+N <- nrow(data_2025)
+
+stan_data <- list(
+  J = J,
+  N = N,
+  team = team_ids,
+  y = data_2025$`3P`,
+  n = data_2025$`3PA`
+)
+stan_model_code <- "
+data {
+  int<lower=1> J;
+  int<lower=1> N;
+  int<lower=1, upper=J> team[N];
+  int<lower=0> y[N];
+  int<lower=0> n[N];
+}
+parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+  vector<lower=0, upper=1>[J] theta;
+}
+model {
+  alpha ~ exponential(1);
+  beta ~ exponential(1);
+  for (j in 1:J)
+    theta[j] ~ beta(alpha, beta);
+  for (i in 1:N)
+    y[i] ~ binomial(n[i], theta[team[i]]);
+}
+"
+fit <- stan(
+  model_code = stan_model_code,
+  data = stan_data,
+  iter = 2000,
+  chains = 4,
+  seed = 123
+)
+print(fit, pars = c("alpha", "beta", "theta"))
+plot(fit, pars = c("theta"))
+posterior_samples <- extract(fit)
+theta_means <- apply(posterior_samples$theta, 2, mean)
+
+# Combine with team names
+team_map <- data.frame(
+  Team = unique(data_2025$Team),
+  PosteriorMean3P = theta_means
+)
+
+print(team_map)
+
+
+
+
+
+```
+
+```{r}
+library(rstan)
+library(dplyr)
+library(ggplot2)
+
+# Stan model code as a string
+stan_model_code <- "
+data {
+  int<lower=1> J;
+  int<lower=1> N;
+  int<lower=1, upper=J> team[N];
+  int<lower=0> y[N];
+  int<lower=0> n[N];
+}
+parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+  vector<lower=0, upper=1>[J] theta;
+}
+model {
+  alpha ~ exponential(1);
+  beta ~ exponential(1);
+  for (j in 1:J)
+    theta[j] ~ beta(alpha, beta);
+  for (i in 1:N)
+    y[i] ~ binomial(n[i], theta[team[i]]);
+}
+"
+
+# Prepare 2025 data
+data_2025 <- combined_df %>% filter(Season == "2025")
+team_factor <- factor(data_2025$Team)
+team_ids <- as.numeric(team_factor)
+team_name_map <- levels(team_factor)
+
+stan_data <- list(
+  J = length(team_name_map),
+  N = nrow(data_2025),
+  team = team_ids,
+  y = data_2025$`3P`,
+  n = data_2025$`3PA`
+)
+
+# Fit Stan model
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
+fit <- stan(
+  model_code = stan_model_code,
+  data = stan_data,
+  iter = 2000,
+  chains = 4,
+  seed = 123
+)
+
+
+team_map <- data.frame(
+  Team = unique(data_2025$Team),
+  PosteriorMean3P = theta_means
+)
+
+print(team_map)
+
+# Extract posterior means and match to team names
+posterior_samples <- extract(fit)
+theta_means <- apply(posterior_samples$theta, 2, mean)
+
+posterior_df <- data.frame(
+  Team = team_name_map,
+  PosteriorMean3P = theta_means
+)
+
+# Plot posterior mean 3P% per team
+ggplot(posterior_df, aes(x = reorder(Team, PosteriorMean3P), y = PosteriorMean3P)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Posterior Mean Team 3P% (2025)", x = "Team", y = "Estimated 3P%") +
+  theme_minimal()
+
+
+```
+```{r}
+traceplot(fit, pars = "theta", inc_warmup = FALSE, main = "Trace Plot for Team 3P% Estimates (2024-25)")
+
+```
+
+```{r}
+#2005
+# Load libraries
+library(rstan)
+library(dplyr)
+library(ggplot2)
+
+# Stan model code as a string (same as before)
+stan_model_code <- "
+data {
+  int<lower=1> J;
+  int<lower=1> N;
+  int<lower=1, upper=J> team[N];
+  int<lower=0> y[N];
+  int<lower=0> n[N];
+}
+parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+  vector<lower=0, upper=1>[J] theta;
+}
+model {
+  alpha ~ exponential(1);
+  beta ~ exponential(1);
+  for (j in 1:J)
+    theta[j] ~ beta(alpha, beta);
+  for (i in 1:N)
+    y[i] ~ binomial(n[i], theta[team[i]]);
+}
+"
+
+# Prepare 2005 data
+data_2005 <- combined_df %>% filter(Season == "2005")
+team_factor_2005 <- factor(data_2005$Team)
+team_ids_2005 <- as.numeric(team_factor_2005)
+team_name_map_2005 <- levels(team_factor_2005)
+
+stan_data_2005 <- list(
+  J = length(team_name_map_2005),
+  N = nrow(data_2005),
+  team = team_ids_2005,
+  y = data_2005$`3P`,
+  n = data_2005$`3PA`
+)
+
+# Fit Stan model
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
+fit_2005 <- stan(
+  model_code = stan_model_code,
+  data = stan_data_2005,
+  iter = 2000,
+  chains = 4,
+  seed = 42
+)
+
+# Extract posterior means and match to team names
+posterior_samples_2005 <- extract(fit_2005)
+theta_means_2005 <- apply(posterior_samples_2005$theta, 2, mean)
+
+posterior_df_2005 <- data.frame(
+  Team = team_name_map_2005,
+  PosteriorMean3P = theta_means_2005
+)
+
+# Plot posterior mean 3P% per team for 2005
+ggplot(posterior_df_2005, aes(x = reorder(Team, PosteriorMean3P), y = PosteriorMean3P)) +
+  geom_col(fill = "tomato") +
+  coord_flip() +
+  labs(title = "Posterior Mean Team 3P% (2005)", x = "Team", y = "Estimated 3P%") +
+  theme_minimal()
+
+posterior_samples_2005 <- extract(fit_2005)
+theta_means_2005 <- apply(posterior_samples_2005$theta, 2, mean)
+
+posterior_df_2005 <- data.frame(
+  Team = team_name_map_2005,
+  PosteriorMean3P = theta_means_2005
+)
+
+# Print the table
+print(posterior_df_2005)
+
+
+
+
+```
+
+```{r}
+traceplot(fit_2005, pars = "theta", inc_warmup = FALSE, main = "Trace Plot for Team 3P% Estimates (2004-05)")
+traceplot(fit_2005, pars = "alpha", inc_warmup = FALSE, main = "Trace Plot for Alpha Parameter (2004-05)")
+traceplot(fit_2005, pars = "beta", inc_warmup = FALSE, main = "Trace Plot for Beta Parameter (2004-05)")
+
+```
+
+```{r}
+posterior_samples_2025 <- extract(fit) 
+posterior_samples_2005 <- extract(fit_2005) 
+
+theta_2025 <- posterior_samples_2025$theta
+theta_2005 <- posterior_samples_2005$theta
+
+posterior_df_2025 <- as.data.frame(theta_2025)
+posterior_df_2005 <- as.data.frame(theta_2005)
+
+library(ggplot2)
+ggplot() +
+  geom_density(data = as.data.frame(theta_2025), aes(x = V1), fill = "blue", alpha = 0.6) +
+  geom_density(data = as.data.frame(theta_2005), aes(x = V1), fill = "red", alpha = 0.6) +
+  labs(title = "Posterior Distributions of Team 3P% for 2005 vs 2025",
+       x = "Posterior Team 3P%", y = "Density") +
+  theme_minimal() +
+  scale_fill_manual(values = c("blue", "red"), name = "Season", labels = c("2025", "2005"))
+
+```
