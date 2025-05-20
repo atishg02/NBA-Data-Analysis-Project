@@ -42,66 +42,85 @@ EDA involved exploring the NBA data to answer key questions, such as:
 
 ### Data Analysis
 
-*SCRAPING OUR DATA FOR 2025*
+*Generating our Posterior Means for 2025*
 ```R
-library(rvest)
+library(rstan)
 library(dplyr)
+library(ggplot2)
 
-url <- "https://www.basketball-reference.com/leagues/NBA_2025_totals.html"
-page <- read_html(url)
+# Stan model code as a string
+stan_model_code <- "
+data {
+  int<lower=1> J;
+  int<lower=1> N;
+  int<lower=1, upper=J> team[N];
+  int<lower=0> y[N];
+  int<lower=0> n[N];
+}
+parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+  vector<lower=0, upper=1>[J] theta;
+}
+model {
+  alpha ~ exponential(1);
+  beta ~ exponential(1);
+  for (j in 1:J)
+    theta[j] ~ beta(alpha, beta);
+  for (i in 1:N)
+    y[i] ~ binomial(n[i], theta[team[i]]);
+}
+"
 
-player_stats <- page %>%
-  html_element("table#totals_stats") %>%
-  html_table()
+# Prepare 2025 data
+data_2025 <- combined_df %>% filter(Season == "2025")
+team_factor <- factor(data_2025$Team)
+team_ids <- as.numeric(team_factor)
+team_name_map <- levels(team_factor)
 
-top_3pt_players_df <- player_stats %>%
-  filter(!is.na(Team), !grepl("TM", Team)) %>%
-  mutate(
-  `3PA` = as.numeric(`3PA`),
-  `3P` = as.numeric(`3P`)
-) %>%
-group_by(Team) %>%
-arrange(desc(`3PA`), .by_group = TRUE) %>%
-slice_head(n = 5) %>%
-ungroup() %>%
-dplyr::select(Player, Team, `3P`, `3PA`) %>%
-as.data.frame()
+stan_data <- list(
+  J = length(team_name_map),
+  N = nrow(data_2025),
+  team = team_ids,
+  y = data_2025$`3P`,
+  n = data_2025$`3PA`
+)
 
-top_3pt_players_df <- top_3pt_players_df[-1, ]
+# Fit Stan model
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
 
-print(top_3pt_players_df)
-```
+fit <- stan(
+  model_code = stan_model_code,
+  data = stan_data,
+  iter = 2000,
+  chains = 4,
+  seed = 123
+)
 
-*SCRAPING OUR DATA FOR 2005*
-```R
-library(rvest)
-library(dplyr)
 
-url <- "https://www.basketball-reference.com/leagues/NBA_2005_totals.html"
-page <- read_html(url)
+team_map <- data.frame(
+  Team = unique(data_2025$Team),
+  PosteriorMean3P = theta_means
+)
 
-player_stats <- page %>%
-html_element("table#totals_stats") %>%
-html_table()
+print(team_map)
 
-names(player_stats) <- trimws(names(player_stats))
+# Extract posterior means and match to team names
+posterior_samples <- extract(fit)
+theta_means <- apply(posterior_samples$theta, 2, mean)
 
-top_3pt_players_df_2005 <- player_stats %>%
-  filter(!is.na(Team), !grepl("TM", Team)) %>%
-  mutate(
-  `3PA` = as.numeric(`3PA`),
-  `3P` = as.numeric(`3P`)
-) %>%
-group_by(Team) %>%
-arrange(desc(`3PA`), .by_group = TRUE) %>%
-slice_head(n = 5) %>%
-ungroup() %>%
-dplyr::select(Player, Team, `3P`, `3PA`) %>%
-as.data.frame()
+posterior_df <- data.frame(
+  Team = team_name_map,
+  PosteriorMean3P = theta_means
+)
 
-top_3pt_players_df_2005 <- top_3pt_players_df_2005[-1, ]
-
-print(top_3pt_players_df_2005)
+# Plot posterior mean 3P% per team
+ggplot(posterior_df, aes(x = reorder(Team, PosteriorMean3P), y = PosteriorMean3P)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Posterior Mean Team 3P% (2025)", x = "Team", y = "Estimated 3P%") +
+  theme_minimal()
 ```
 
 ### Results/Findings
