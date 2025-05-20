@@ -1,20 +1,27 @@
 # Three-point Shooting Analysis
 
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Data Sources](data-sources)
+- [Tools](Tools)
+- [Data Cleaning and Preparation](Data Cleaning-and-preparation)
+
 ### Project Overview
 
-This data analysis project explores the 
+This data analysis project explores the rise of three-point shooting taking over the NBA. We will investigate whether or not this revolution is as dramatic as it seems, and whether or not players are getting better at shooting three-pointers. Our motivation for this project stems from league-wide calls to institute new rules for three-pointer as it's seen as "over-powered" and not properly balanced. 
 
 ### Data Sources
 
-The primary datasets used for this analysis are the "NBA_3pt_2025.csv" file and the "NBA_3pt_2005.csv" file. These files contain the top 5 players from each of the 30 NBA teams by three-pointer attempted. 
+The primary datasets used for this analysis are the "NBA_3pt_2025.csv" file and the "NBA_3pt_2005.csv" file. These files contain the top 5 players from each of the 30 NBA teams by three-pointers attempted. 
 
 ### Tools
 
 - Selector Gadget - Data Collection
-- R/R Studio - Data Cleaning and Data Analysis
+- R- Data Cleaning and Data Analysis
 - Overleaf - Creating reports
 
-### Data Cleaning/Preparation
+### Data Cleaning and Preparation
 
 For the initial data preparation phase, we did the following things: 
 1. Data loading and inspection.
@@ -94,4 +101,18 @@ print(top_3pt_players_df_2005)
 
 ### Results/Findings
 
+The analysis results are summarized as follows:
+1. The NBA has seen a rise in three-point shooting within the last 20 years, however, three-point percentage has not significantly risen.
+2. There is a trend toward position-less basketball, where every player is expected to be proficient in three-point shooting. This is evident in the overall density of three-point percentage between 2005 and 2025.
 
+### Limitations
+
+Two seasons alone cannot guarantee persistence of trends; future analyses should model full year-by-year trends. These two seasons were selected in hopes this would make the data more digestible and easier to understand, but it comes with limitations. Just as one team per season can easily be an outlier, there is nothing to say that one or both of these seasons aren’t themselves outliers. It therefore has the ability to skew our conclusions on overall trends in the league. Also, this paper only examines the three-point shot. There are other methods of scoring in a basketball game, such as the two-point shot and a free throw. Variables like win-percentage or standing in the overall league could provide valuable insight into the actual effectiveness of the three-point shot.
+
+### References
+
+1. Basketball Reference. ”NBA Player Three-Point Shooting Stats,” https://www.basketball-reference. com/.
+2. Stan Development Team. ”Stan Modeling Language Users Guide and Reference Manual,” https: //mc-stan.org.
+3. Syracuse University News. ”Deflation: Study Shows NBA 3-Point Shot Has Lost Its Value,” https:// news.syr.edu/blog/2024/02/09/deflation-study-shows-nba-3-point-shot-has-lost-its-value/.
+4. FOX Sports. ”NBA commissioner Adam Silver vows to fix 3-point shooting issue” https://www. foxsports.com/stories/nba/nba-commissioner-adam-silver-vows-fix-3-point-shooting-issue-we-it.
+5. Overleaf, online latex editor. Overleaf, Online LaTeX Editor. (n.d.). https://www.overleaf.com/ 
