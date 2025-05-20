@@ -1,11 +1,9 @@
 ---
 title: "451data"
-author: "Divjot Gill"
+author: "Atish Gupta"
 date: "2025-04-14"
 output:
   pdf_document: default
-  html_document: default
-  word_document: default
 ---
 
 ```{r setup, include=FALSE}
