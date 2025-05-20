@@ -1,0 +1,179 @@
+---
+title: "451data"
+author: "Divjot Gill"
+date: "2025-04-14"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#library(rvest)
+#library(dplyr)
+
+#url <- "https://www.basketball-reference.com/leagues/NBA_2025_totals.html"
+#page <- read_html(url)
+
+#player_stats <- page %>%
+#  html_element("table#totals_stats") %>%
+#  html_table()
+
+#top_3pt_players_df <- player_stats %>%
+#  filter(!is.na(Team), !grepl("TM", Team)) %>%
+#  mutate(
+# `3PA` = as.numeric(`3PA`),
+#  `3P` = as.numeric(`3P`)
+#) %>%
+#group_by(Team) %>%
+#arrange(desc(`3PA`), .by_group = TRUE) %>%
+#slice_head(n = 5) %>%
+#ungroup() %>%
+#dplyr::select(Player, Team, `3P`, `3PA`) %>%
+#as.data.frame()
+
+#top_3pt_players_df <- top_3pt_players_df[-1, ]
+
+#print(top_3pt_players_df)
+```
+
+
+```{r}
+#library(rvest)
+#library(dplyr)
+
+#url <- "https://www.basketball-reference.com/leagues/NBA_2005_totals.html"
+#page <- read_html(url)
+
+#player_stats <- page %>%
+#html_element("table#totals_stats") %>%
+#html_table()
+
+#names(player_stats) <- trimws(names(player_stats))
+
+#top_3pt_players_df_2005 <- player_stats %>%
+#  filter(!is.na(Team), !grepl("TM", Team)) %>%
+#  mutate(
+#  `3PA` = as.numeric(`3PA`),
+#  `3P` = as.numeric(`3P`)
+#) %>%
+#group_by(Team) %>%
+#arrange(desc(`3PA`), .by_group = TRUE) %>%
+#slice_head(n = 5) %>%
+#ungroup() %>%
+#dplyr::select(Player, Team, `3P`, `3PA`) %>%
+#as.data.frame()
+
+#top_3pt_players_df_2005 <- top_3pt_players_df_2005[-1, ]
+
+#print(top_3pt_players_df_2005)
+```
+
+
+```{r}
+library(dplyr)
+
+top_3pt_players_df_2005 <- read.csv("NBA_3pt_2005.csv")
+top_3pt_players_df_2005 <- top_3pt_players_df_2005 %>%
+  rename(
+    `3P_Makes` = X3P,
+    `3P_Attempts` = X3PA
+  )
+head(top_3pt_players_df_2005) 
+```
+```{r}
+library(dplyr)
+top_3pt_players_df <- read.csv("NBA_3pt_2025.csv")
+top_3pt_players_df <- top_3pt_players_df %>%
+  rename(
+    `3P_Makes` = X3P,
+    `3P_Attempts` = X3PA
+  )
+
+head(top_3pt_players_df)
+```
+
+
+```{r}
+top_3pt_players_df$Season <- "2025"
+top_3pt_players_df_2005$Season <- "2005"
+
+colnames(top_3pt_players_df_2005) <- colnames(top_3pt_players_df)
+
+combined_df <- bind_rows(top_3pt_players_df, top_3pt_players_df_2005)
+
+combined_df <- combined_df %>%
+  mutate(`3P%` = `3P_Makes` / `3P_Attempts`)
+
+library(ggplot2)
+
+ggplot(combined_df, aes(x = `3P%`, fill = Season)) +
+  geom_density(alpha = 0.6) +
+  labs(title = "Density of 3P% per Player", x = "3-Point Percentage", y = "Density") +
+  theme_minimal()
+
+
+team_summary <- combined_df %>%
+  group_by(Team, Season) %>%
+  summarise(team_3P_Makes = sum(`3P_Makes`), team_3P_Attempts = sum(`3P_Attempts`), .groups = "drop") %>%
+  mutate(`Team 3P%` = team_3P_Makes / team_3P_Attempts)
+
+ggplot(team_summary, aes(x = Season, y = `Team 3P%`, fill = Season)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(title = "Team-Level 3P% by Season", x = "Season", y = "3P%") +
+  theme_minimal()
+
+ggplot(combined_df, aes(x = `3P_Attempts`, y = `3P_Makes`, color = Season)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "3PA vs 3P per Player", x = "3-Point Attempts", y = "3-Point Made") +
+  theme_minimal()
+
+
+team_attempts <- combined_df %>%
+  group_by(Team, Season) %>%
+  summarise(Total3P_Attempts = sum(`3P_Attempts`), .groups = "drop")
+
+ggplot(team_attempts, aes(x = reorder(Team, Total3P_Attempts), y = Total3P_Attempts, fill = Season)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  labs(title = "Total 3P_Attempts by Team in Each Season", x = "Team", y = "Total 3P_Attempts") +
+  theme_minimal()
+```
+
+```{r}
+library(dplyr)
+
+# Load your cleaned datasets
+df_2025 <- read.csv("NBA_3pt_2025.csv")
+df_2005 <- read.csv("NBA_3pt_2005.csv")
+
+# Rename columns for consistency
+df_2025 <- df_2025 %>%
+  rename(`3P` = X3P, `3PA` = X3PA) %>%
+  mutate(Season = "2025")
+
+df_2005 <- df_2005 %>%
+  rename(`3P` = X3P, `3PA` = X3PA) %>%
+  mutate(Season = "2005")
+
+# Combine into one dataset
+combined <- bind_rows(df_2025, df_2005) %>%
+  mutate(`3P%` = `3P` / `3PA`)
+
+```
+
+```{r}
+t_test_3PA <- t.test(`3PA` ~ Season, data = combined)
+print(t_test_3PA)
+
+```
+```{r}
+t_test_3Ppct <- t.test(`3P%` ~ Season, data = combined)
+print(t_test_3Ppct)
+
+```
+
