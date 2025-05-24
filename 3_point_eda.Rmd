@@ -1,0 +1,539 @@
+---
+title: "T.tests"
+author: "Atish Gupta"
+date: "2025-05-20"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+nba_2005 <- read.csv("NBA_3pt_2005.csv")
+head(nba_2005)
+```
+
+```{r}
+nba_2025 <- read.csv("NBA_3pt_2025.csv")
+head(nba_2025)
+```
+
+```{r}
+library(rvest)
+library(dplyr)
+library(stringr)
+library(tidyverse)
+library(ggplot2)
+library(tidyr)
+```
+
+```{r}
+install.packages("stringr")
+```
+
+```{r}
+install.packages("rvest")
+```
+```{r}
+install.packages("dplyr")
+```
+```{r}
+install.packages("readr")
+```
+
+
+
+
+```{r}
+url <- "https://www.basketball-reference.com/leagues/NBA_2005_totals.html"
+page <- read_html(url)
+
+player_stats <- page %>%
+  html_element("table#totals_stats") %>%
+  html_table()
+
+top_3pt_players_df <- player_stats %>%
+  filter(!is.na(Team), !grepl("TM", Team)) %>%
+  mutate(
+ `3PA` = as.numeric(`3PA`),
+  `3P` = as.numeric(`3P`)
+) %>%
+group_by(Team) %>%
+arrange(desc(`3PA`), .by_group = TRUE) %>%
+slice_head(n = 5) %>%
+ungroup() %>%
+dplyr::select(Player, Team, `3P`, `3PA`) %>%
+as.data.frame()
+
+top_3pt_players_df <- top_3pt_players_df[-1, ]
+
+print(top_3pt_players_df)
+```
+
+
+```{r}
+#Scraping our data for season 2005-2025
+
+  url <- "https://www.basketball-reference.com/leagues/NBA_2025_totals.html"
+  
+  # Read and parse the HTML page
+  page <- read_html(url)
+  
+  # Extract the totals stats table
+  player_stats <- page %>%
+    html_element("table#totals_stats") %>%
+    html_table()
+  
+  # Clean and filter data
+  top_players <- player_stats %>%
+    filter(!is.na(Team), !grepl("TM", Team)) %>%
+    mutate(
+      `3PM` = `3P`,
+      `3PA` = as.numeric(`3PA`),
+      `3PM` = as.numeric(`3PM`)
+    ) %>%
+    group_by(Team) %>%
+    arrange(desc(`3PA`), .by_group = TRUE) %>%
+    slice_head(n = 5) %>%
+    ungroup() %>%
+    dplyr:: select(Player, Team, `3PM`, `3PA`) %>%
+    as.data.frame()
+  
+  # Remove redundant header row if it appears (common with Basketball Reference)
+ # if (any(names(top_players) == "Player") && top_players$Player[1] == "Player") {
+    top_players <- top_players[-1, ]
+ # }
+  
+top_players
+```
+
+
+```{r}
+#Scraping our data for season 2005-2025
+
+top_3pt_players_df <- function(season) {
+  url <- paste0("https://www.basketball-reference.com/leagues/NBA_", season, "_totals.html")
+  
+  # Read and parse the HTML page
+  page <- read_html(url)
+  
+  # Extract the totals stats table
+  player_stats <- page %>%
+    html_element("table#totals_stats") %>%
+    html_table()
+  
+  # Clean and filter data
+  top_players <- player_stats %>%
+    filter(!is.na(Team), !grepl("TM", Team)) %>%
+    mutate(
+      `3PM` = `3P`,
+      `3PA` = as.numeric(`3PA`),
+      `3PM` = as.numeric(`3PM`)
+    ) %>%
+    group_by(Team) %>%
+    arrange(desc(`3PA`), .by_group = TRUE) %>%
+    slice_head(n = 5) %>%
+    ungroup() %>%
+    select(Player, Team, `3PM`, `3PA`) %>%
+    as.data.frame()
+  
+  # Remove redundant header row if it appears (common with Basketball Reference)
+ # if (any(names(top_players) == "Player") && top_players$Player[1] == "Player") {
+    top_players <- top_players[-1, ]
+ # }
+  
+  return(top_players)
+}
+
+print(top_3pt_players_df(2005))
+print(top_3pt_players_df(2006))
+print(top_3pt_players_df(2007))
+print(top_3pt_players_df(2008))
+print(top_3pt_players_df(2009))
+print(top_3pt_players_df(2010))
+print(top_3pt_players_df(2011))
+print(top_3pt_players_df(2012))
+print(top_3pt_players_df(2013))
+print(top_3pt_players_df(2014))
+print(top_3pt_players_df(2015))
+print(top_3pt_players_df(2016))
+print(top_3pt_players_df(2017))
+print(top_3pt_players_df(2018))
+print(top_3pt_players_df(2019))
+print(top_3pt_players_df(2020))
+print(top_3pt_players_df(2021))
+print(top_3pt_players_df(2022))
+print(top_3pt_players_df(2023))
+print(top_3pt_players_df(2024))
+print(top_3pt_players_df(2025))
+
+```
+
+
+
+```{r}
+write.csv(top_3pt_players_df(2007), "NBA_3P_2007.csv", row.names = FALSE)
+write.csv(top_3pt_players_df_2009, "NBA_3P_2009.csv", row.names = FALSE)
+write.csv(top_3pt_players_df_2011, "NBA_3P_2011.csv", row.names = FALSE)
+write.csv(top_3pt_players_df_2013, "NBA_3P_2013.csv", row.names = FALSE)
+write.csv(top_3pt_players_df_2015, "NBA_3P_2015.csv", row.names = FALSE)
+write.csv(top_3pt_players_df_2017, "NBA_3P_2017.csv", row.names = FALSE)
+write.csv(top_3pt_players_df_2019, "NBA_3P_2019.csv", row.names = FALSE)
+write.csv(top_3pt_players_df_2021, "NBA_3P_2021.csv", row.names = FALSE)
+write.csv(top_3pt_players_df_2023, "NBA_3P_2023.csv", row.names = FALSE)
+```
+
+
+
+```{r}
+combined_df <- bind_rows(top_3pt_players_df(2005), top_3pt_players_df(2006), top_3pt_players_df(2007), top_3pt_players_df(2008), top_3pt_players_df(2009), top_3pt_players_df(2010), top_3pt_players_df(2011),top_3pt_players_df(2012),  top_3pt_players_df(2013), top_3pt_players_df(2014), top_3pt_players_df(2015), top_3pt_players_df(2016), top_3pt_players_df(2017), top_3pt_players_df(2018), top_3pt_players_df(2019), top_3pt_players_df(2020), top_3pt_players_df(2021), top_3pt_players_df(2022), top_3pt_players_df(2023), top_3pt_players_df(2024), top_3pt_players_df(2025))
+
+combined_df
+```
+
+```{r}
+combined_df <- bind_rows(top_3pt_players_df(2005), top_3pt_players_df(2006))
+
+combined_df
+```
+
+```{r}
+# Create a vector of 12 seasons (adjust as needed)
+seasons <- seq(2005, 2025, by = 1)  # or use the exact years: c(2005, 2006, ..., 2025)
+
+# Repeat each season 150 times
+season_vector <- rep(seasons, each = 150)
+
+# Add to your data frame
+combined_df$Season <- season_vector
+
+combined_df
+
+```
+
+
+```{r}
+write.csv(combined_df, "NBA_3P_total.csv", row.names = FALSE)
+```
+
+```{r}
+#nba_df <- combined_df %>%
+nba_df = rename(combined_df, "Three_Point_Makes"= "3P", "Three_Point_Attempts" = "3PA")
+nba_df
+```
+
+```{r}
+nba_df <- nba_df %>%
+  mutate(Three_Point_Perc = Three_Point_Makes/Three_Point_Attempts)
+nba_df
+```
+
+```{r}
+nba_df_1 <- nba_df %>%
+    filter(Season == 2023)
+nba_df_1
+```
+
+
+```{r}
+season_totals_df <- nba_df %>%
+  group_by(Season) %>%
+  summarize(
+    Total_3PM = sum(`Three_Point_Makes`),
+    Total_3PA = sum(`Three_Point_Attempts`),
+    Avg_3P_Perc = mean(`Three_Point_Perc`) 
+  )
+season_totals_df
+```
+
+```{r}
+team_totals_df <- nba_df %>%
+  group_by(Team,Season) %>%
+  summarize(
+    Total_3PM = sum(`Three_Point_Makes`),
+    Total_3PA = sum(`Three_Point_Attempts`),
+    Avg_3P_Perc = mean(`Three_Point_Perc`) 
+  )
+team_totals_df
+```
+```{r}
+url <- paste0("https://www.basketball-reference.com/leagues/NBA_2023_ratings.html")
+  
+  # Read and parse the HTML page
+  page <- read_html(url)
+  
+  # Extract the totals stats table
+  other <- page %>%
+    html_element(".right:nth-child(5)") %>%
+    html_table()
+  
+  # Clean and filter data
+  season_wins <- other
+  
+  season_wins
+  # Remove redundant header row if it appears (common with Basketball Reference)
+ # if (any(names(top_players) == "Player") && top_players$Player[1] == "Player") {
+    
+```
+```{r}
+url <- paste0("https://www.basketball-reference.com/leagues/NBA_2025_totals.html")
+  
+  # Read and parse the HTML page
+  page <- read_html(url)
+  
+  # Extract the totals stats table
+  player_stats <- page %>%
+    html_element("table#totals_stats") %>%
+    html_table()
+  
+  # Clean and filter data
+  top_players <- player_stats
+  
+  top_players <- top_players[-1, ]
+```
+
+```{r}
+team_wins_df <- function(season) {
+  url <- paste0("https://www.basketball-reference.com/leagues/NBA_", season, "_totals.html")
+  
+  # Read and parse the HTML page
+  page <- read_html(url)
+  
+  # Extract the totals stats table
+  player_stats <- page %>%
+    html_element("table#totals_stats") %>%
+    html_table()
+  
+  # Clean and filter data
+  top_players <- player_stats %>%
+    filter(!is.na(Team), !grepl("TM", Team)) %>%
+    mutate(
+      `3PM` = `3P`,
+      `3PA` = as.numeric(`3PA`),
+      `3PM` = as.numeric(`3PM`)
+    ) %>%
+    group_by(Team) %>%
+    arrange(desc(`3PA`), .by_group = TRUE) %>%
+    slice_head(n = 5) %>%
+    ungroup() %>%
+    select(Player, Team, `3PM`, `3PA`) %>%
+    as.data.frame()
+  
+  # Remove redundant header row if it appears (common with Basketball Reference)
+ # if (any(names(top_players) == "Player") && top_players$Player[1] == "Player") {
+    top_players <- top_players[-1, ]
+ # }
+  
+  return(top_players)
+
+```
+
+
+
+```{r}
+ggplot(team_totals_df, aes(Team)) +
+  geom_line(aes(y = Total_3PM, color = '3-Point Makes')) +
+  ylab('Total 3-Pointers by Season') +
+  ggtitle('League-Wide 3-Point Shooting Totals') +
+  scale_color_manual(name = "Statistic",
+                     values = c("3-Point Makes" = "blue", "3-Point Attempts" = "red")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # <--- Rotates labels
+
+```
+```{r}
+
+# Filter to 2015 season and reshape to long format
+team_season <- team_totals_df %>%
+  filter(Season == 2014) %>%
+  select(Team, Total_3PM, Total_3PA) %>%
+  pivot_longer(cols = c(Total_3PM, Total_3PA),
+               names_to = "Stat",
+               values_to = "Total")
+
+# Create bar plot
+ggplot(team_season, aes(x = reorder(Team, -Total), y = Total, fill = Stat)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Team 3-Point Makes and Attempts (2014 Season)",
+    x = "Team",
+    y = "Total",
+    fill = "Statistic"
+  ) +
+  scale_fill_manual(values = c("Total_3PM" = "blue", "Total_3PA" = "red"),
+                    labels = c("3-Point Makes", "3-Point Attempts")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+```{r}
+plot_3pt_stats_by_season <- function(season_input) {
+  season_df <- team_totals_df %>%
+    filter(Season == season_input) %>%
+    select(Team, Total_3PM, Total_3PA) %>%
+    pivot_longer(cols = c(Total_3PM, Total_3PA),
+                 names_to = "Stat",
+                 values_to = "Total")
+  
+  ggplot(season_df, aes(x = reorder(Team, -Total), y = Total, fill = Stat)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    labs(
+      title = paste("Team 3-Point Makes and Attempts (", season_input, " Season)", sep = ""),
+      x = "Team",
+      y = "Total",
+      fill = "Statistic"
+    ) +
+    scale_fill_manual(
+      values = c("Total_3PM" = "blue", "Total_3PA" = "red"),
+      labels = c("3-Point Makes", "3-Point Attempts")
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+plot_3pt_stats_by_season(2014)
+plot_3pt_stats_by_season(2015)
+plot_3pt_stats_by_season(2016)
+plot_3pt_stats_by_season(2017)
+plot_3pt_stats_by_season(2018)
+plot_3pt_stats_by_season(2019)
+plot_3pt_stats_by_season(2020)
+plot_3pt_stats_by_season(2021)
+
+
+
+
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Filter to 2015 season and reshape to long format
+team_season <- team_totals_df %>%
+  filter(Season == 2015) %>%
+  select(Team, Total_3PM, Total_3PA) %>%
+  pivot_longer(cols = c(Total_3PM, Total_3PA),
+               names_to = "Stat",
+               values_to = "Total")
+
+# Create bar plot
+ggplot(team_season, aes(x = reorder(Team, -Total), y = Total, fill = Stat)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Team 3-Point Makes and Attempts (2015 Season)",
+    x = "Team",
+    y = "Total",
+    fill = "Statistic"
+  ) +
+  scale_fill_manual(values = c("Total_3PM" = "blue", "Total_3PA" = "red"),
+                    labels = c("3-Point Makes", "3-Point Attempts")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+```{r}
+ggplot(team_totals_df, aes(Season)) +
+  geom_line(aes(y = Total_3PM, color = '3-Point Makes')) +
+  ylab('Total 3-Pointers by Season') +
+  ggtitle('League-Wide 3-Point Shooting Totals') +
+  scale_color_manual(name = "Statistic",
+                     values = c("3-Point Makes" = "blue", "3-Point Attempts" = "red")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # <--- Rotates labels
+
+```
+
+
+
+```{r}
+ggplot(season_totals_df, aes(Season)) +
+  geom_line(aes(y=Total_3PM, color = '3-Point Makes')) +
+  geom_line(aes(y=Total_3PA, color = '3-Point Attempts')) +
+ # geom_line(aes(y=Avg_3P_Perc, color = '3-Point Attempts')) +
+  ylab('Total 3-Pointers by Season') +
+  ggtitle('League-Wide 3-Point Shooting Totals') +
+   scale_color_manual(name = "Statistic",
+                     values = c("3-Point Makes" = "blue", "3-Point Attempts" = "red"))
+```
+
+```{r}
+ggplot(season_totals_df, aes(Season)) +
+  geom_line(aes(y=Avg_3P_Perc)) +
+  ylab('3-Point Percentage') +
+  ggtitle('League-Wide 3-Point Shooting Totals') +
+  ylim(0.30,0.40)
+   #scale_color_manual(name = "Statistic",
+                    # values = c("3-Point Makes" = "blue", "3-Point Attempts" = "red"))
+
+```
+
+```{r}
+nba_lm <- lm(3PA ~ Season, data = nba_df)
+
+```
+
+```{r}
+model_3pa <- lm(Total_3PA ~ Season, data = season_totals_df)
+summary(model_3pa)
+```
+
+
+```{r}
+model_3pm <- lm(Total_3PM ~ Season, data = season_totals_df)
+summary(model_3pm)
+
+```
+
+
+```{r}
+ggplot(season_totals_df, aes(x = Season, y = Total_3PA)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "League-Wide 3PA Over Time", y = "Total 3PA")
+```
+
+
+```{r}
+ggplot(season_totals_df, aes(x = Season)) +
+  geom_point(aes(y = Total_3PM, color = '3-Point Makes')) +
+  geom_smooth(aes(y = Total_3PM, color = '3-Point Makes'), method = "lm", se = FALSE) +
+  geom_point(aes(y = Total_3PA, color = '3-Point Attempts')) +
+  geom_smooth(aes(y = Total_3PA, color = '3-Point Attempts'), method = "lm", se = FALSE) +
+  labs(title = "League-Wide 3PM Over Time",
+       y = "Total 3PM or 3PA",
+       color = "Legend")
+```
+
+```{r}
+ggplot(season_totals_df, aes(x = Season)) +
+  geom_point(aes(y = Avg_3P_Perc, color = '3-Point Percentage')) +
+  geom_smooth(aes(y = Avg_3P_Perc, color = '3-Point Percentage'), method = "lm", se = FALSE) +
+  labs(title = "League-Wide 3-Point Percentage Over Time",
+       y = "3-Point Percentage",
+       color = "Legend")
+```
+
+
+```{r}
+ggplot(nba_df, aes(Season, Three_Point_Makes)) +
+  geom_point()
+```
+
+```{r}
+ggplot(nba_df, aes(Season, Three_Point_Perc)) +
+  geom_point()
+```
+
