@@ -14,7 +14,7 @@
 
 ### Project Overview
 
-This data analysis project explores the rise of three-point shooting taking over the NBA. We will investigate whether or not this revolution is as dramatic as it seems, and whether or not players are getting better at shooting three-pointers. Our motivation for this project stems from league-wide calls to institute new rules for three-pointer as it's seen as "over-powered" and not properly balanced. 
+This data analysis project explores the rise of three-point shooting taking over the NBA. We will investigate whether or not this revolution is as dramatic as it seems, and whether or not players are getting better at shooting three-pointers. Our motivation for this project stems from league-wide calls to institute new rules for three-pointer as it's seen as "over-powered" and not properly balanced. Additionally, we will try to analyze whether three-pointers lead to more wins in a particular NBA season.
 
 ### Data Sources
 
