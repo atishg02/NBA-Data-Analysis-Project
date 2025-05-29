@@ -18,76 +18,103 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r}
-install.packages("rvest")
-install.packages("dyplr")
-```
-
-```{r}
 library(rvest)
 library(tidyverse)
+
 ```
+
 ```{r}
-#team_wins_df <- function(season) {
-  # Load necessary libraries
-library(rvest)
-library(dplyr)
+install.packages("rvest")
+install.packages("tidyverse")
+```
 
-# URL of the Basketball Reference 2025 advanced team ratings page
+```{r}
+
+# Step 1: Read the HTML page
 url <- "https://www.basketball-reference.com/leagues/NBA_2025_ratings.html"
-
-# Read the page and extract the table
 page <- read_html(url)
 
-# Extract the table node by ID
-team_table <- page %>%
+# Step 2: Extract the table
+team_table_2025 <- page %>%
+  html_element("table#ratings") %>%
+  html_table() 
+
+colnames(team_table_2025)[2] <-  "Team"
+colnames(team_table_2025)[5] <-  "Wins"
+
+team_table_2025 <- team_table_2025 %>%
+  select(Team, Wins) %>%
+  slice(-1) %>%
+  arrange(Team) %>%
+  mutate(
+    Wins = as.numeric(Wins)
+  ) %>%
+  as.data.frame()
+team_table_2025
+```
+
+
+
+```{r}
+# Step 1: Read the HTML page
+url <- "https://www.basketball-reference.com/leagues/NBA_2024_ratings.html"
+page <- read_html(url)
+
+# Step 2: Extract the table
+team_table_2024 <- page %>%
   html_element("table#ratings") %>%
   html_table()
 
-# Select and clean up the relevant columns: Team and Wins
-team_wins_df <- team_table %>%
-  select(Team, W) %>%
-  mutate(W = as.numeric(W))
+team_table_2024 <- team_table_2024[-1,]
+colnames(team_table_2024)[2] <-  "Team"
+colnames(team_table_2024)[5] <-  "Wins"
 
-# View the cleaned dataframe
-print(team_wins_df)
-
-# }
-  
-#team_wins_df(2005)
+team_table_2024 %>%
+  select(Team,Wins) %>%
+  as.data.frame()
 
 ```
 
 ```{r}
-colnames(team_table)
-
-```
-```{r}
-# Load necessary libraries
-library(rvest)
-library(dplyr)
-
-# URL of the Basketball Reference 2025 advanced team ratings page
-url <- "https://www.basketball-reference.com/leagues/NBA_2025_ratings.html"
-
-# Read the page and extract the table
+url <- "https://www.basketball-reference.com/leagues/NBA_2025.html"
 page <- read_html(url)
 
-# Extract the ratings table
-team_table <- page %>%
-  html_element("table#ratings") %>%
-  html_table()
+team_3P_2025 <- page %>%
+  html_element("table#totals-team") %>%
+  html_table() %>%
+  select(Team,`3P`,`3PA`,`2P`,`2PA`) %>%
+  slice(-31) %>%
+  arrange(Team) %>%
+  rename(
+    `3PM` = `3P`
+  ) %>%
+  mutate(
+ `3PA` = as.numeric(`3PA`),
+ `3PM` = as.numeric(`3PM`)
+  ) %>%
+  as.data.frame()
+team_3P_2025  
 
-# Check column names to verify actual headers
-print(colnames(team_table))  # View column names to match correctly
 
-# Select the relevant columns: Team and Wins (W)
-# Adjust names below if actual column headers are different
-team_wins_df <- team_table %>%
-  select(Team, W) %>%   # Use actual column names from above output
-  mutate(W = as.numeric(W))
+```
 
-# View the cleaned dataframe
-print(team_wins_df)
 
+```{r}
+wins_3p <- bind_cols(team_table_2025, team_3P_2025)
+wins_3p <- wins_3p %>%
+  select(Team...1, Wins, `3PM`, `3PA`, `2P`, `2PA`)
+wins_3p
+```
+
+
+```{r}
+wins_lm <- lm(Wins ~ `3PM` +`2P` + `2PA`, wins_3p)
+summary(wins_lm)
+```
+
+
+```{r}
+ggplot(wins_3p, aes(x = `3PM`, y = Wins)) +
+  geom_line()
 ```
 
