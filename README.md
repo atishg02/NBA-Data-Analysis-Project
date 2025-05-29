@@ -36,9 +36,12 @@ For the initial data preparation phase, we did the following things:
 
 EDA involved exploring the NBA data to answer key questions, such as:
 
-- Has there been a dramatic increase or decrease in three-pointers _attempted_ between 2005 and 2025?
-- Has there been an increase or decrease in three-pointers _made_ between 2005 and 2025?
+- Has there been an increase, decrease, or fluctation in three-pointers _attempted_ between 2005 and 2025?
+- Has there been an increase or decrease, or fluctation in three-pointers _made_ between 2005 and 2025?
+- Has there been an increase or decrease, or fluctation in three-point _percentage_ between 2005 and 2025?
 - Are the top NBA three-point shooters shooting better in 2005 or 2025?
+- Which teams shot and made the most threes per season? What was their percentage?
+- Is there a correlation between three-pointers made/attempted and wins in a given season?
 
 ### Data Analysis
 
