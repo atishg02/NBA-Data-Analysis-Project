@@ -29,12 +29,9 @@ install.packages("tidyverse")
 ```
 
 ```{r}
-
-# Step 1: Read the HTML page
 url <- "https://www.basketball-reference.com/leagues/NBA_2025_ratings.html"
 page <- read_html(url)
 
-# Step 2: Extract the table
 team_table_2025 <- page %>%
   html_element("table#ratings") %>%
   html_table() 
@@ -53,14 +50,10 @@ team_table_2025 <- team_table_2025 %>%
 team_table_2025
 ```
 
-
-
 ```{r}
-# Step 1: Read the HTML page
 url <- "https://www.basketball-reference.com/leagues/NBA_2024_ratings.html"
 page <- read_html(url)
 
-# Step 2: Extract the table
 team_table_2024 <- page %>%
   html_element("table#ratings") %>%
   html_table()
@@ -72,7 +65,6 @@ colnames(team_table_2024)[5] <-  "Wins"
 team_table_2024 %>%
   select(Team,Wins) %>%
   as.data.frame()
-
 ```
 
 ```{r}
@@ -94,10 +86,7 @@ team_3P_2025 <- page %>%
   ) %>%
   as.data.frame()
 team_3P_2025  
-
-
 ```
-
 
 ```{r}
 wins_3p <- bind_cols(team_table_2025, team_3P_2025)
@@ -106,12 +95,10 @@ wins_3p <- wins_3p %>%
 wins_3p
 ```
 
-
 ```{r}
 wins_lm <- lm(Wins ~ `3PM` +`2P` + `2PA`, wins_3p)
 summary(wins_lm)
 ```
-
 
 ```{r}
 ggplot(wins_3p, aes(x = `3PM`, y = Wins)) +
